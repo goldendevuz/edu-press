@@ -31,8 +31,7 @@ INSTALLED_APPS = [
 ]
 
 THIRD_APPS = {
-    # 'drf_material',
-    "rest_wind",
+    'drf_material',
     'rest_framework',
     'rest_framework.authtoken',
     'rest_framework_simplejwt',
@@ -49,6 +48,8 @@ THIRD_APPS = {
 LOCAL_APPS = [
     'apps.v1.users',
     'apps.v1.shared',
+    'apps.v1.course',
+    'apps.v1.article',
 ]
 
 INSTALLED_APPS += THIRD_APPS
