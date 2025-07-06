@@ -10,7 +10,7 @@ from rest_framework_simplejwt.tokens import RefreshToken
 
 from apps.v1.shared.models import BaseModel
 
-ORDINARY_USER, MANAGER, ADMIN = ("ordinary_user", 'manager', 'admin')
+ORDINARY_USER, MANAGER, ADMIN, WRITER = ("ordinary_user", 'manager', 'admin', 'writer')
 VIA_EMAIL, VIA_PHONE = ("via_email", "via_phone")
 NEW, CODE_VERIFIED, DONE, PHOTO_DONE = ('new', 'code_verified', 'done', 'photo_done')
 
@@ -23,7 +23,8 @@ class User(AbstractUser, BaseModel):
     USER_ROLES = (
         (ORDINARY_USER, ORDINARY_USER),
         (MANAGER, MANAGER),
-        (ADMIN, ADMIN)
+        (ADMIN, ADMIN),
+        (WRITER, WRITER),
     )
     AUTH_TYPE_CHOICES = (
         (VIA_PHONE, VIA_PHONE),
@@ -50,9 +51,11 @@ class User(AbstractUser, BaseModel):
     @property
     def full_name(self):
         return " ".join([self.first_name, self.last_name])
-
+    
     def create_verify_code(self, verify_type, verify_value=None):
-        code = "".join([str(random.randint(0, 10000) % 10) for _ in range(4)])
+        first_digit = str(random.randint(1, 9))
+        other_digits = "".join([str(random.randint(0, 9)) for _ in range(5)])
+        code = first_digit + other_digits
         UserConfirmation.objects.create(
             user_id=self.id,
             verify_type=verify_type,
@@ -60,6 +63,7 @@ class User(AbstractUser, BaseModel):
             code=code
         )
         return code
+
 
     def check_username(self):
         if not self.username:
@@ -99,8 +103,8 @@ class User(AbstractUser, BaseModel):
         self.check_pass()
         self.hashing_password()
 
-PHONE_EXPIRE = 5
-EMAIL_EXPIRE = 1
+PHONE_EXPIRE = 2
+EMAIL_EXPIRE = 2
 
 
 class UserConfirmation(BaseModel):

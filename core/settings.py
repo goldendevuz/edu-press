@@ -43,6 +43,9 @@ THIRD_APPS = {
     'import_export',
     'django_extensions',
     "drf_standardized_errors",
+    'schema_viewer',
+    'drf_spectacular',
+    'drf_spectacular_sidecar',  # required for Django collectstatic discovery
 }
 
 LOCAL_APPS = [
@@ -143,19 +146,26 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 REST_FRAMEWORK = {
     'DEFAULT_PERMISSION_CLASSES': [
         "rest_framework.permissions.IsAuthenticated",
-        # "apps.v1.shared.permissions.HasCompletedSignup",
+        "apps.v1.shared.permissions.HasCompletedSignup",
     ],
     'DEFAULT_AUTHENTICATION_CLASSES': [
-        'rest_framework.authentication.SessionAuthentication',
+        # 'rest_framework.authentication.SessionAuthentication',
         'rest_framework.authentication.BasicAuthentication',
-        'rest_framework.authentication.TokenAuthentication',
+        # 'rest_framework.authentication.TokenAuthentication',
         'rest_framework_simplejwt.authentication.JWTAuthentication',
     ],
+    'DEFAULT_PARSER_CLASSES': (
+        'rest_framework.parsers.JSONParser',
+        'rest_framework.parsers.FormParser',
+        'rest_framework.parsers.MultiPartParser',  # Needed for file uploads
+    ),
     'DEFAULT_RENDERER_CLASSES': (
         'rest_framework.renderers.JSONRenderer',
         'rest_framework.renderers.BrowsableAPIRenderer',
     ),
-    "EXCEPTION_HANDLER": "drf_standardized_errors.handler.exception_handler"
+    "EXCEPTION_HANDLER": "drf_standardized_errors.handler.exception_handler",
+    'DEFAULT_SCHEMA_CLASS': 'drf_spectacular.openapi.AutoSchema',
+    
 }
 
 SIMPLE_JWT = {
@@ -238,3 +248,51 @@ STATIC_ROOT = BASE_DIR / 'staticfiles'
 STATIC_URL = '/static/'
 
 DRF_STANDARDIZED_ERRORS = {"ENABLE_IN_DEBUG_FOR_UNHANDLED_EXCEPTIONS": True}
+
+# SPECTACULAR_SETTINGS = {
+#     # ... your existing config
+#     'POSTPROCESSING_HOOKS': [
+#         'drf_spectacular.hooks.postprocess_schema_enforce_multipart',
+#     ],
+# }
+
+
+# SPECTACULAR_SETTINGS = {
+#     # your existing settings ...
+#     'TITLE': 'Free Education Template | Online Courses & E-Learning | EduPress',
+#     'VERSION': '1.0.0',
+#     'SERVE_INCLUDE_SCHEMA': False,
+#     'SWAGGER_UI_DIST': 'SIDECAR',
+#     'SWAGGER_UI_FAVICON_HREF': 'SIDECAR',
+#     'REDOC_DIST': 'SIDECAR',
+
+#     # Force PUT to be treated as multipart
+#     # 'POSTPROCESSING_HOOKS': [
+#     #     'drf_spectacular.hooks.postprocess_schema_enforce_multipart',
+#     # ],
+
+#     # JWT only
+#     'AUTHENTICATION_WHITELIST': [
+#         'rest_framework_simplejwt.authentication.JWTAuthentication',
+#     ],
+#     'SECURITY': [{'Bearer': []}],
+#     'COMPONENTS': {
+#         'securitySchemes': {
+#             'Bearer': {
+#                 'type': 'http',
+#                 'scheme': 'bearer',
+#                 'bearerFormat': 'JWT',
+#             },
+#         },
+#     },
+# }
+
+SPECTACULAR_SETTINGS = {
+    'TITLE': 'Free Education Template | Online Courses & E-Learning | EduPress',
+    'VERSION': '1.0.0',
+    'SERVE_INCLUDE_SCHEMA': False,
+    'SWAGGER_UI_DIST': 'SIDECAR',  # shorthand to use the sidecar instead
+    'SWAGGER_UI_FAVICON_HREF': 'SIDECAR',
+    'REDOC_DIST': 'SIDECAR',
+    'COMPONENT_SPLIT_REQUEST':True
+}

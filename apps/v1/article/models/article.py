@@ -12,8 +12,8 @@ class Article(BaseModel):
     date = models.DateField(auto_now_add=True)
     description = models.TextField()
 
-    category = models.ManyToManyField(ArticleCategory, related_name='articles')
-    tags = models.ManyToManyField(ArticleTag, related_name='articles')
+    category = models.ManyToManyField(ArticleCategory, related_name='articles', blank=True)
+    tags = models.ManyToManyField(ArticleTag, related_name='articles', blank=True)
     author = models.ForeignKey(User, on_delete=models.CASCADE, related_name='articles')
 
     def __str__(self):

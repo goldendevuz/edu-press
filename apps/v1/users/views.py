@@ -1,9 +1,8 @@
+from django.utils import timezone
 import random
 import string
-from django.core.exceptions import ObjectDoesNotExist
-from django.utils.timezone import datetime
 from rest_framework import permissions, status
-from rest_framework.exceptions import ValidationError, NotFound
+from rest_framework.exceptions import ValidationError
 from rest_framework.generics import CreateAPIView, UpdateAPIView
 from rest_framework.permissions import IsAuthenticated, AllowAny
 from rest_framework.response import Response
@@ -12,11 +11,18 @@ from rest_framework_simplejwt.exceptions import TokenError
 from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
 from rest_framework.decorators import api_view
+from drf_spectacular.utils import extend_schema
+from icecream import ic
+from rest_framework.parsers import MultiPartParser
+from rest_framework.decorators import api_view, permission_classes
+from django.db import IntegrityError
+from rest_framework import status
+from rest_framework.response import Response
 
-from apps.v1.shared.utils.response import success_response
+from apps.v1.shared.utils.response import error_response, success_response
 from apps.v1.shared.utility import send_email, check_username_phone_email, send_phone_code
 from .serializers import SignUpSerializer, ChangeUserInformation, ChangeUserPhotoSerializer, LoginSerializer, \
-    LoginRefreshSerializer, LogoutSerializer, ResetPasswordSerializer
+    LoginRefreshSerializer, LogoutSerializer, ResetPasswordSerializer, VerifySerializer
 from .models import User, CODE_VERIFIED, NEW, VIA_EMAIL, VIA_PHONE, UserConfirmation
 
 
@@ -29,7 +35,9 @@ class CreateUserView(CreateAPIView):
 class VerifyAPIView(APIView):
     permission_classes = (IsAuthenticated, )
 
+    @extend_schema(request=VerifySerializer)
     def post(self, request, *args, **kwargs):
+        ic(request.__dict__)
         user = self.request.user             # user ->
         code = self.request.data.get('code') # 4083
         # if user.auth_status != NEW:
@@ -50,12 +58,13 @@ class VerifyAPIView(APIView):
 
     @staticmethod
     def check_verify(user, code):       # 12:03 -> 12:05 => expiration_time=12:05   12:04
-        verifies = user.verify_codes.filter(expiration_time__gte=datetime.now(), code=code, is_confirmed=False)
+        verifies = user.verify_codes.filter(expiration_time__gte=timezone.now(), code=code, is_confirmed=False)
         # ic(verifies)
         # ic(user.__dict__)
         # ic(code)
         # ic(UserConfirmation.objects.filter(user_id=user.id, code=code).first().__dict__)
-        usr = UserConfirmation.objects.filter(user_id=user.id, code=code).first()
+        usr = UserConfirmation.objects.filter(user_id=user.id, code=code).last()
+        ic(usr.__dict__)
         if not verifies.exists():
             data = {
                 "message": "Tasdiqlash kodingiz xato yoki eskirgan"
@@ -65,10 +74,11 @@ class VerifyAPIView(APIView):
             verifies.update(is_confirmed=True)
         if user.auth_status == NEW:
             user.auth_status = CODE_VERIFIED
-            if usr.verify_type == VIA_PHONE:
-                user.phone_number = usr.verify_value
-            elif usr.verify_type == VIA_EMAIL:
-                user.email = usr.verify_value
+            if usr.verify_value:
+                if usr.verify_type == VIA_PHONE:
+                    user.phone_number = usr.verify_value
+                elif usr.verify_type == VIA_EMAIL:
+                    user.email = usr.verify_value
             user.save()
         return True
 
@@ -77,6 +87,7 @@ class GetNewVerification(APIView):
     permission_classes = [IsAuthenticated, ]
 
     def get(self, request, *args, **kwargs):
+        ic(request.__dict__)
         user = self.request.user
         # if user.auth_status != NEW:
         #     data = {
@@ -108,7 +119,7 @@ class GetNewVerification(APIView):
 
     @staticmethod
     def check_verification(user):
-        verifies = user.verify_codes.filter(expiration_time__gte=datetime.now(), is_confirmed=False)
+        verifies = user.verify_codes.filter(expiration_time__gte=timezone.now(), is_confirmed=False)
         if verifies.exists():
             data = {
                 "message": "Kodingiz hali ishlatish uchun yaroqli. Biroz kutib turing"
@@ -117,9 +128,9 @@ class GetNewVerification(APIView):
 
 
 class UpdateUserInformationView(UpdateAPIView):
-    permission_classes = [IsAuthenticated, ]
+    permission_classes = [IsAuthenticated]
     serializer_class = ChangeUserInformation
-    http_method_names = ('patch',)
+    http_method_names = ('put', 'patch')
 
     def get_object(self):
         return self.request.user
@@ -131,18 +142,30 @@ class UpdateUserInformationView(UpdateAPIView):
                 'message': 'No data provided for update.',
             }, status=status.HTTP_400_BAD_REQUEST)
 
-        super(UpdateUserInformationView, self).partial_update(request, *args, **kwargs)
-        
-        data = {
+        try:
+            response = super().partial_update(request, *args, **kwargs)
+        except IntegrityError as e:
+            return Response({
+                'success': False,
+                'message': 'Integrity error: possible duplicate value.',
+                'detail': str(e)
+            }, status=status.HTTP_400_BAD_REQUEST)
+
+        return Response({
             'success': True,
-            "message": "User updated successfully",
+            'message': 'User updated successfully',
             'auth_status': self.request.user.auth_status,
-        }
-        return Response(data, status=status.HTTP_200_OK)
+        }, status=response.status_code)
 
 
+@extend_schema(
+    request=ChangeUserPhotoSerializer,
+    description="Upload or change the authenticated user's profile photo.",
+    methods=["PUT"]
+)
 class ChangeUserPhotoView(APIView):
     permission_classes = [IsAuthenticated]
+    parser_classes = [MultiPartParser]  # ⬅️ required for handling files
 
     def put(self, request, *args, **kwargs):
         serializer = ChangeUserPhotoSerializer(data=request.data)
@@ -150,8 +173,6 @@ class ChangeUserPhotoView(APIView):
             user = request.user
             serializer.update(user, serializer.validated_data)
             return success_response("Rasm muvaffaqiyatli o'zgartirildi", status_code=status.HTTP_200_OK)
-        
-        # Let your custom exception handler deal with it
         raise ValidationError(serializer.errors)
 
 
@@ -241,5 +262,18 @@ class PasswordGeneratorView(APIView):
         return Response({"password": password}, status=status.HTTP_200_OK)
 
 @api_view(['GET'])
+@permission_classes([IsAuthenticated])
 def test_login(request):
-    return Response({"message": "Hello, world!"})
+    user = request.user
+    ic(user.auth_status)
+
+    if user.auth_status != "photo_done":
+        return error_response(
+            message="Access denied. Role must be 'photo_done'.",
+            status_code=status.HTTP_403_FORBIDDEN
+        )
+
+    return success_response(
+        message="Hello, world!",
+        data={"username": user.username}
+    )

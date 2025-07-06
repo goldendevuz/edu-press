@@ -247,23 +247,33 @@ class LoginRefreshSerializer(serializers.Serializer):
     def validate(self, attrs):
         # Get access token from the authenticated request context
         request = self.context.get('request')
+        ic(request)
+        ic(request.__dict__)
+        ic(request.user.__dict__)
         if not request or not hasattr(request, 'auth'):
             raise serializers.ValidationError("Access token missing from request.")
 
         access_token = request.auth  # This should be a JWT token string
+        ic(access_token)
         access_token_instance = AccessToken(access_token)
+        ic(access_token_instance)
 
         user_id = access_token_instance.get('user_id')
+        ic(user_id)
         user = get_object_or_404(User, id=user_id)
+        ic(user)
         update_last_login(None, user)
 
         # Validate and rotate refresh token
         refresh_token = attrs['refresh']
+        ic(refresh_token)
         refresh = RefreshToken(refresh_token)
+        ic(refresh)
         data = {
             'access_token': str(refresh.access_token),
             'refresh': str(refresh),
         }
+        ic(data)
 
         return data
 
@@ -288,3 +298,16 @@ class ResetPasswordSerializer(serializers.Serializer):
             raise NotFound(detail="User not found")
         attrs['user'] = user.first()
         return attrs
+
+class VerifySerializer(serializers.Serializer):
+    code = serializers.CharField(
+        min_length=4,
+        max_length=4,
+        required=True,
+        help_text="Enter the 4-digit verification code",
+    )
+
+    def validate_code(self, value):
+        if not value.isdigit():
+            raise serializers.ValidationError("Code must contain only digits.")
+        return value

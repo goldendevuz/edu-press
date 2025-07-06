@@ -20,3 +20,5 @@ environs
 pytest
 pytest-factoryboy
 drf-standardized-errors
+django-schema-viewer
+drf-spectacular[sidecar]
