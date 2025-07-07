@@ -1,3 +1,4 @@
+import os
 from datetime import timedelta
 from pathlib import Path
 
@@ -270,11 +271,8 @@ APPEND_SLASH=True
 MEDIA_URL = 'media/'
 MEDIA_ROOT = BASE_DIR / 'media/'
 
-# Collect static files here
-STATIC_ROOT = BASE_DIR / 'staticfiles'
-
-# URL to access static files
 STATIC_URL = '/static/'
+STATIC_ROOT = BASE_DIR / 'staticfiles'
 
 DRF_STANDARDIZED_ERRORS = {"ENABLE_IN_DEBUG_FOR_UNHANDLED_EXCEPTIONS": True}
 

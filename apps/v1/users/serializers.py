@@ -284,3 +284,8 @@ class VerifySerializer(serializers.Serializer):
         if not value.isdigit():
             raise serializers.ValidationError("Code must contain only digits.")
         return value
+
+class UserSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = User
+        fields = '__all__'

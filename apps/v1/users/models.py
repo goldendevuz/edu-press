@@ -10,7 +10,7 @@ from rest_framework_simplejwt.tokens import RefreshToken
 
 from apps.v1.shared.models import BaseModel
 
-ORDINARY_USER, MANAGER, ADMIN, WRITER = ("ordinary_user", 'manager', 'admin', 'writer')
+ORDINARY_USER, MANAGER, ADMIN, WRITER, INSTRUCTOR = ("ordinary_user", 'manager', 'admin', 'writer', 'instructor')
 VIA_EMAIL, VIA_PHONE = ("via_email", "via_phone")
 NEW, CODE_VERIFIED, DONE, PHOTO_DONE = ('new', 'code_verified', 'done', 'photo_done')
 
@@ -25,6 +25,7 @@ class User(AbstractUser, BaseModel):
         (MANAGER, MANAGER),
         (ADMIN, ADMIN),
         (WRITER, WRITER),
+        (INSTRUCTOR, INSTRUCTOR)
     )
     AUTH_TYPE_CHOICES = (
         (VIA_PHONE, VIA_PHONE),

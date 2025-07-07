@@ -2,14 +2,25 @@ services:
   api:
     build: .
     container_name: auth_api
-    ports:
-      - "1024:1024"
-      - "1025:1025"
+    expose:
+      - "1024"  # exposed only to other containers, not to host directly
     env_file:
       - .env
     volumes:
       - .:/usr/src/app
-      - ./static:/usr/src/app/static
+      - ./staticfiles:/usr/src/app/staticfiles
       - ./media:/usr/src/app/media
     restart: always
     user: root
+
+  nginx:
+    image: nginx:latest
+    container_name: edu_nginx
+    ports:
+      - "80:80"  # no port needed in URL
+    volumes:
+      - ./nginx.conf:/etc/nginx/conf.d/default.conf
+      - ./staticfiles:/usr/src/app/staticfiles
+      - ./media:/usr/src/app/media
+    depends_on:
+      - api

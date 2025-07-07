@@ -32,7 +32,7 @@ class Command(BaseCommand):
                 continue
 
             # Create or update the category
-            category, created = CourseCategory.objects.get_or_create(name=name)
+            category, created = CourseCategory.objects.get_or_create(name=name, is_top=True)
             
             # Update icon only if newly created or different filename
             if created or not category.icon.name.endswith(filename):

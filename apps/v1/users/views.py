@@ -1,7 +1,13 @@
-from django.utils import timezone
 import random
 import string
-from rest_framework import permissions, status
+import uuid
+from django.shortcuts import get_object_or_404
+from django.utils import timezone
+from django_filters.rest_framework import DjangoFilterBackend
+from drf_spectacular.types import OpenApiTypes
+from drf_spectacular.utils import extend_schema, OpenApiParameter, OpenApiExample
+from rest_framework.filters import SearchFilter, OrderingFilter
+from rest_framework import permissions, status, viewsets
 from rest_framework.exceptions import ValidationError
 from rest_framework.generics import CreateAPIView, UpdateAPIView
 from rest_framework.permissions import IsAuthenticated, AllowAny
@@ -19,10 +25,13 @@ from django.db import IntegrityError
 from rest_framework import status
 from rest_framework.response import Response
 
+from apps.v1.article.serializers import PromoteUserSerializer
 from apps.v1.shared.utils.response import error_response, success_response
 from apps.v1.shared.utility import send_email, check_username_phone_email, send_phone_code
+from apps.v1.users.filters import UserFilter
+from apps.v1.users.permissions import IsSuperUser
 from .serializers import SignUpSerializer, ChangeUserInformation, ChangeUserPhotoSerializer, LoginSerializer, \
-    LoginRefreshSerializer, LogoutSerializer, ResetPasswordSerializer, VerifySerializer
+    LoginRefreshSerializer, LogoutSerializer, ResetPasswordSerializer, UserSerializer, VerifySerializer
 from .models import User, CODE_VERIFIED, NEW, VIA_EMAIL, VIA_PHONE, UserConfirmation
 
 
@@ -279,3 +288,62 @@ def test_login(request):
             "current_role": user.auth_status
         }
     )
+
+class UserViewSet(viewsets.ModelViewSet):
+    queryset = User.objects.all()
+    serializer_class = UserSerializer
+    permission_classes = [IsSuperUser]
+    parser_classes = [MultiPartParser]
+    filter_backends = [DjangoFilterBackend, SearchFilter, OrderingFilter]
+    filterset_class = UserFilter
+    filterset_fields = '__all__'
+    search_fields = '__all__'
+    ordering_fields = '__all__'
+    
+class PromoteToInstructorView(APIView):
+    permission_classes = [permissions.IsAdminUser]
+
+    def normalize_uuid(self, uuid_string):
+        """Convert UUID without dashes into proper UUID format."""
+        if len(uuid_string) == 32:
+            return str(uuid.UUID(uuid_string))
+        return uuid_string
+
+    @extend_schema(
+        parameters=[
+            OpenApiParameter(
+                name='user_id',
+                type=OpenApiTypes.UUID,
+                location=OpenApiParameter.PATH,
+                required=True,
+                description='UUID of the user to promote',
+                examples=[
+                    OpenApiExample(
+                        name="uuid_without_dashes",
+                        value="2557107c9c9841a48f142a8d56ceb2ad",
+                        summary="UUID without dashes",
+                    ),
+                    OpenApiExample(
+                        name="uuid_with_dashes",
+                        value="2557107c-9c98-41a4-8f14-2a8d56ceb2ad",
+                        summary="UUID with dashes",
+                    ),
+                ]
+            )
+        ]
+    )
+    def post(self, request, user_id):
+        try:
+            user_id = self.normalize_uuid(str(user_id))
+        except ValueError:
+            return Response({'detail': 'Invalid UUID format.'}, status=status.HTTP_400_BAD_REQUEST)
+
+        user = get_object_or_404(User, id=user_id)
+
+        if user.user_roles == 'instructor':
+            return Response({'detail': 'User is already a instructor.'}, status=status.HTTP_400_BAD_REQUEST)
+
+        user.user_roles = 'instructor'
+        user.save()
+
+        return Response(PromoteUserSerializer(user).data, status=status.HTTP_200_OK)

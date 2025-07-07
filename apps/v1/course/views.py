@@ -132,7 +132,7 @@ class InstructorSocialViewSet(viewsets.ModelViewSet):
 class InstructorViewSet(viewsets.ModelViewSet):
     queryset = Instructor.objects.all()
     serializer_class = InstructorSerializer
-    permission_classes = [IsAuthenticatedOrReadOnly]
+    permission_classes = [IsAdminOrReadOnly]
     
 class LessonViewSet(viewsets.ModelViewSet):
     queryset = Lesson.objects.all()

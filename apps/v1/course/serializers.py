@@ -166,11 +166,9 @@ class InstructorSocialSerializer(serializers.ModelSerializer):
         ]
 
 class InstructorSerializer(serializers.ModelSerializer):
-    
-
     class Meta:
         model = Instructor
-        fields = ['id', 'name', 'profile_picture', 'created']
+        fields = ['id', 'user', 'name', 'created']
         
 class LessonSerializer(serializers.ModelSerializer):
     course_title = serializers.CharField(source='course.title', read_only=True)
