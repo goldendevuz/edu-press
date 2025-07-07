@@ -12,16 +12,6 @@ email_regex = re.compile(r"\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Z|a-z]{2,7}\b"
 phone_regex = re.compile(r"(\+[0-9]+\s*)?(\([0-9]+\))?[\s0-9\-]+[0-9]+")
 username_regex = re.compile(r"^[a-zA-Z0-9_.-]+$")
 
-
-# Define the phone number regex
-# phone_regex = RegexValidator(
-#     regex=r'^\+998\d{9}$',
-#     message="Telefon raqam quyidagi formatda bo'lishi kerak: '+998XXXXXXXXX' (masalan, +998901234567)."
-# )
-    # phone_number = phonenumbers.parse(username_phone_email)
-    # if phonenumbers.is_valid_number(phone_number):
-    #     username_phone_email = 'phone'
-
 def check_username_phone_email(username_phone_email):
     # ic(username_phone_email)
     if re.fullmatch(email_regex, username_phone_email):

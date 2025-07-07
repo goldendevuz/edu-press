@@ -7,7 +7,7 @@ def success_response(message: str = None, data: dict = None, status_code: int = 
         "data": data
     }, status=status_code)
 
-def error_response(message: str = None, status_code: int = 400):
+def error_response(message: str = None, data: dict = None, status_code: int = 400):
     return Response({
         "status": False,
         "message": message,

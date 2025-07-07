@@ -1,10 +1,12 @@
+from django_filters.rest_framework import DjangoFilterBackend
+from rest_framework.filters import SearchFilter, OrderingFilter
 from rest_framework import viewsets
 from rest_framework.permissions import AllowAny
 from rest_framework.generics import CreateAPIView
 from rest_framework.parsers import MultiPartParser
 from rest_framework.permissions import IsAuthenticatedOrReadOnly
 
-from apps.v1.course.permissions import IsAdminOrReadOnly
+from apps.v1.course.permissions import IsAdminOrReadOnly, IsInstructorOrReadOnly
 from .models import (
     ContactUs, CourseCategory, CourseFaq, CourseLecture, CourseReview, CourseSection, Course, Curriculum, Faq, Feedback, InstructorSocial, Instructor, 
     Lesson, Quiz, Social, StudentLecture, Student
@@ -14,6 +16,7 @@ from .serializers import (
     CourseSerializer, CurriculumSerializer, FaqSerializer, FeedbackSerializer, InstructorSocialSerializer, InstructorSerializer, LessonSerializer,
     QuizSerializer, SocialSerializer, StudentLectureSerializer, StudentSerializer
 )
+from .filters import CourseCategoryFilter, CourseFilter
 
 
 class ContactUsCreateView(CreateAPIView):
@@ -35,6 +38,11 @@ class CourseCategoryViewSet(viewsets.ModelViewSet):
     serializer_class = CourseCategorySerializer
     permission_classes = [IsAdminOrReadOnly]
     parser_classes = [MultiPartParser]
+    filter_backends = [DjangoFilterBackend, SearchFilter, OrderingFilter]
+    filterset_class = CourseCategoryFilter
+    filterset_fields = '__all__'
+    search_fields = '__all__'
+    ordering_fields = '__all__'
 
 
 class CourseFaqViewSet(viewsets.ModelViewSet):
@@ -84,23 +92,13 @@ class CourseSectionViewSet(viewsets.ModelViewSet):
 class CourseViewSet(viewsets.ModelViewSet):
     queryset = Course.objects.all()
     serializer_class = CourseSerializer
-    permission_classes = [IsAuthenticatedOrReadOnly]
-
-    def get_queryset(self):
-        category = self.request.query_params.get('category')
-        instructor = self.request.query_params.get('instructor')
-        is_featured = self.request.query_params.get('featured')
-
-        queryset = Course.objects.all()
-
-        if category:
-            queryset = queryset.filter(category_id=category)
-        if instructor:
-            queryset = queryset.filter(instructor_id=instructor)
-        if is_featured:
-            queryset = queryset.filter(is_featured=is_featured.lower() == 'true')
-
-        return queryset
+    permission_classes = [IsAuthenticatedOrReadOnly, IsInstructorOrReadOnly]
+    parser_classes = [MultiPartParser]
+    filter_backends = [DjangoFilterBackend, SearchFilter, OrderingFilter]
+    filterset_class = CourseFilter
+    filterset_fields = '__all__'
+    search_fields = '__all__'
+    ordering_fields = '__all__'
     
 class CurriculumViewSet(viewsets.ModelViewSet):
     queryset = Curriculum.objects.all()

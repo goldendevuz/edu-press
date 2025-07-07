@@ -28,11 +28,9 @@ class CourseCategorySerializer(serializers.ModelSerializer):
     class Meta:
         model = CourseCategory
         fields = ['id', 'name', 'icon', 'is_top', 'created']
-        read_only_fields = ['created']
 
 class CourseFaqSerializer(serializers.ModelSerializer):
     course_title = serializers.CharField(source='course.title', read_only=True)
-    created = serializers.DateTimeField(source='created_at', read_only=True)
 
     class Meta:
         model = CourseFaq
@@ -47,7 +45,7 @@ class CourseFaqSerializer(serializers.ModelSerializer):
         
 class CourseLectureSerializer(serializers.ModelSerializer):
     course_section_name = serializers.CharField(source='course_section.name', read_only=True)
-    created = serializers.DateTimeField(source='created_at', read_only=True)
+    
 
     class Meta:
         model = CourseLecture
@@ -63,7 +61,7 @@ class CourseLectureSerializer(serializers.ModelSerializer):
         
 class CourseReviewSerializer(serializers.ModelSerializer):
     student_username = serializers.CharField(source='student.user.username', read_only=True)
-    created = serializers.DateTimeField(source='created_at', read_only=True)
+    
 
     class Meta:
         model = CourseReview
@@ -78,7 +76,7 @@ class CourseReviewSerializer(serializers.ModelSerializer):
         
 class CourseSectionSerializer(serializers.ModelSerializer):
     course_title = serializers.CharField(source='course.title', read_only=True)
-    created = serializers.DateTimeField(source='created_at', read_only=True)
+    
 
     class Meta:
         model = CourseSection
@@ -95,7 +93,7 @@ class CourseSerializer(serializers.ModelSerializer):
     instructor_name = serializers.CharField(source='instructor.user.username', read_only=True)
     curriculum_name = serializers.CharField(source='curriculum.name', read_only=True, default=None)
     level_display = serializers.CharField(source='get_level_display', read_only=True)
-    created = serializers.DateTimeField(source='created_at', read_only=True)
+    is_featured = serializers.BooleanField(default=False)  # explicitly tell DRF it's false
 
     class Meta:
         model = Course
@@ -121,14 +119,14 @@ class CourseSerializer(serializers.ModelSerializer):
         ]
 
 class CurriculumSerializer(serializers.ModelSerializer):
-    created = serializers.DateTimeField(source='created_at', read_only=True)
+    
 
     class Meta:
         model = Curriculum
         fields = ['id', 'description', 'created']
 
 class FaqSerializer(serializers.ModelSerializer):
-    created = serializers.DateTimeField(source='created_at', read_only=True)
+    
 
     class Meta:
         model = Faq
@@ -136,7 +134,7 @@ class FaqSerializer(serializers.ModelSerializer):
         
 class FeedbackSerializer(serializers.ModelSerializer):
     username = serializers.CharField(source='user.username', read_only=True)
-    created = serializers.DateTimeField(source='created_at', read_only=True)
+    
 
     class Meta:
         model = Feedback
@@ -147,7 +145,7 @@ class FeedbackSerializer(serializers.ModelSerializer):
 class InstructorSocialSerializer(serializers.ModelSerializer):
     instructor_name = serializers.CharField(source='instructor.name', read_only=True)
     social_name = serializers.CharField(source='social.name', read_only=True)
-    created = serializers.DateTimeField(source='created_at', read_only=True)
+    
 
     class Meta:
         model = InstructorSocial
@@ -168,7 +166,7 @@ class InstructorSocialSerializer(serializers.ModelSerializer):
         ]
 
 class InstructorSerializer(serializers.ModelSerializer):
-    created = serializers.DateTimeField(source='created_at', read_only=True)
+    
 
     class Meta:
         model = Instructor
@@ -176,7 +174,7 @@ class InstructorSerializer(serializers.ModelSerializer):
         
 class LessonSerializer(serializers.ModelSerializer):
     course_title = serializers.CharField(source='course.title', read_only=True)
-    created = serializers.DateTimeField(source='created_at', read_only=True)
+    
 
     class Meta:
         model = Lesson
@@ -193,7 +191,7 @@ class LessonSerializer(serializers.ModelSerializer):
         
 class QuizSerializer(serializers.ModelSerializer):
     lesson_title = serializers.CharField(source='lesson.title', read_only=True)
-    created = serializers.DateTimeField(source='created_at', read_only=True)
+    
 
     class Meta:
         model = Quiz
@@ -209,8 +207,6 @@ class QuizSerializer(serializers.ModelSerializer):
         ]
 
 class SocialSerializer(serializers.ModelSerializer):
-    created = serializers.DateTimeField(source='created_at', read_only=True)
-
     class Meta:
         model = Social
         fields = ['id', 'name', 'icon', 'url', 'created']
@@ -218,7 +214,7 @@ class SocialSerializer(serializers.ModelSerializer):
 class StudentLectureSerializer(serializers.ModelSerializer):
     student_username = serializers.CharField(source='student.user.username', read_only=True)
     lecture_name = serializers.CharField(source='lecture.name', read_only=True)
-    created = serializers.DateTimeField(source='created_at', read_only=True)
+    
     status_display = serializers.CharField(source='get_status_display', read_only=True)
 
     class Meta:

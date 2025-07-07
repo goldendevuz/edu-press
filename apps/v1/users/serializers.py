@@ -15,8 +15,7 @@ from icecream import ic
 
 
 class SignUpSerializer(serializers.ModelSerializer):
-    id = serializers.UUIDField(read_only=True)
-    username_phone_email = serializers.CharField(required=True, write_only=True)
+    phone_or_email = serializers.CharField(required=True, write_only=True)
 
     class Meta:
         model = User
@@ -24,7 +23,7 @@ class SignUpSerializer(serializers.ModelSerializer):
             'id',
             'auth_type',
             'auth_status',
-            'username_phone_email',  # Include it in the serialized output
+            'phone_or_email',
         )
         extra_kwargs = {
             'auth_type': {'read_only': True, 'required': False},
@@ -56,7 +55,7 @@ class SignUpSerializer(serializers.ModelSerializer):
 
     @staticmethod
     def auth_validate(data):
-        user_input = str(data.get('username_phone_email')).lower()
+        user_input = str(data.get('phone_or_email')).lower()
         input_type = check_username_phone_email(user_input)
         if input_type not in ["email", "phone"]:
             raise ValidationError({
@@ -241,40 +240,14 @@ class LoginSerializer(TokenObtainPairSerializer):
         return users.first()
 
 
-class LoginRefreshSerializer(serializers.Serializer):
-    refresh = serializers.CharField()
+class LoginRefreshSerializer(TokenRefreshSerializer):
 
     def validate(self, attrs):
-        # Get access token from the authenticated request context
-        request = self.context.get('request')
-        ic(request)
-        ic(request.__dict__)
-        ic(request.user.__dict__)
-        if not request or not hasattr(request, 'auth'):
-            raise serializers.ValidationError("Access token missing from request.")
-
-        access_token = request.auth  # This should be a JWT token string
-        ic(access_token)
-        access_token_instance = AccessToken(access_token)
-        ic(access_token_instance)
-
-        user_id = access_token_instance.get('user_id')
-        ic(user_id)
+        data = super().validate(attrs)
+        access_token_instance = AccessToken(data['access'])
+        user_id = access_token_instance['user_id']
         user = get_object_or_404(User, id=user_id)
-        ic(user)
         update_last_login(None, user)
-
-        # Validate and rotate refresh token
-        refresh_token = attrs['refresh']
-        ic(refresh_token)
-        refresh = RefreshToken(refresh_token)
-        ic(refresh)
-        data = {
-            'access_token': str(refresh.access_token),
-            'refresh': str(refresh),
-        }
-        ic(data)
-
         return data
 
 

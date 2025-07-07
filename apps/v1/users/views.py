@@ -60,11 +60,9 @@ class VerifyAPIView(APIView):
     def check_verify(user, code):       # 12:03 -> 12:05 => expiration_time=12:05   12:04
         verifies = user.verify_codes.filter(expiration_time__gte=timezone.now(), code=code, is_confirmed=False)
         # ic(verifies)
-        # ic(user.__dict__)
         # ic(code)
         # ic(UserConfirmation.objects.filter(user_id=user.id, code=code).first().__dict__)
         usr = UserConfirmation.objects.filter(user_id=user.id, code=code).last()
-        ic(usr.__dict__)
         if not verifies.exists():
             data = {
                 "message": "Tasdiqlash kodingiz xato yoki eskirgan"
@@ -269,11 +267,15 @@ def test_login(request):
 
     if user.auth_status != "photo_done":
         return error_response(
-            message="Access denied. Role must be 'photo_done'.",
-            status_code=status.HTTP_403_FORBIDDEN
+            message=f"Access denied. Required role: 'photo_done'. Your role: '{user.auth_status}'.",
+            status_code=status.HTTP_403_FORBIDDEN,
+            data={"current_role": user.auth_status}
         )
 
     return success_response(
         message="Hello, world!",
-        data={"username": user.username}
+        data={
+            "username": user.username,
+            "current_role": user.auth_status
+        }
     )
