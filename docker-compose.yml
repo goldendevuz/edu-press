@@ -1,7 +1,7 @@
 services:
   api:
     build: .
-    container_name: auth_api
+    container_name: edu_press_api
     expose:
       - "1024"  # exposed only to other containers, not to host directly
     env_file:
