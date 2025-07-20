@@ -16,6 +16,5 @@ from .instructor import Instructor
 from .instructor_social import InstructorSocial
 from .social import Social
 
-from .faq import Faq
 from .contact_us import ContactUs
 from .feedback import Feedback

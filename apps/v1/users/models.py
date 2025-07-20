@@ -10,7 +10,7 @@ from rest_framework_simplejwt.tokens import RefreshToken
 
 from apps.v1.shared.models import BaseModel
 
-ORDINARY_USER, MANAGER, ADMIN, WRITER, INSTRUCTOR = ("ordinary_user", 'manager', 'admin', 'writer', 'instructor')
+ORDINARY_USER, MANAGER, ADMIN, WRITER, INSTRUCTOR, STUDENT = ("ordinary_user", 'manager', 'admin', 'writer', 'instructor', 'student')
 VIA_EMAIL, VIA_PHONE = ("via_email", "via_phone")
 NEW, CODE_VERIFIED, DONE, PHOTO_DONE = ('new', 'code_verified', 'done', 'photo_done')
 

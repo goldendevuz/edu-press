@@ -34,7 +34,7 @@ class UserAdmin(ImportExportModelAdmin, BaseAdmin):
     
     # Manually define list_display (exclude password and other fields)
     list_display = (
-        'username', 'email', 'phone_number', 'user_roles', 'auth_type', 'auth_status', 'is_active', 'date_joined', 'full_name', 'last_login'
+        'username', 'email', 'phone_number','user_roles', 'auth_type', 'auth_status', 'is_active', 'date_joined', 'full_name', 'last_login'
     )
 
     # Using custom form to exclude the password field
@@ -42,7 +42,7 @@ class UserAdmin(ImportExportModelAdmin, BaseAdmin):
 
     # Customize the fieldsets for the detail view (to remove password from form view)
     fieldsets = (
-        (None, {'fields': ('username', 'email', 'phone_number', 'user_roles', 'auth_type', 'auth_status', 'photo', 'is_active')}),
+        (None, {'fields': ('username', 'email', 'phone_number', 'first_name', 'last_name', 'user_roles', 'auth_type', 'auth_status', 'photo', 'is_active')}),
         ('Permissions', {'fields': ('is_staff',)}),
         ('Important Dates', {'fields': ('date_joined', 'last_login')}),
         ('Advanced options', {'fields': ('is_superuser', 'user_permissions', 'groups')}),

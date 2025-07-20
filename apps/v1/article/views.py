@@ -1,12 +1,18 @@
 import uuid
-from rest_framework.views import APIView
-from rest_framework.response import Response
-from rest_framework import status, permissions
 from django.shortcuts import get_object_or_404
 from django.contrib.auth import get_user_model
 from drf_spectacular.types import OpenApiTypes
 from drf_spectacular.utils import extend_schema, OpenApiParameter, OpenApiExample
+from django_filters.rest_framework import DjangoFilterBackend
+from rest_framework.filters import SearchFilter, OrderingFilter
+from rest_framework.views import APIView
+from rest_framework.decorators import action
+from rest_framework.response import Response
+from rest_framework import status, permissions
+from rest_framework.parsers import MultiPartParser
 from rest_framework import viewsets
+
+from .filters import ArticleFilter
 from .serializers import PromoteUserSerializer
 
 
@@ -21,9 +27,21 @@ class ArticleViewSet(viewsets.ModelViewSet):
     queryset = Article.objects.all()
     serializer_class = ArticleSerializer
     permission_classes = [IsAuthenticatedOrReadOnly, IsWriterOrReadOnly]
+    parser_classes = [MultiPartParser]
+    filter_backends = [DjangoFilterBackend, SearchFilter, OrderingFilter]
+    filterset_class = ArticleFilter
+    filterset_fields = '__all__'
+    search_fields = '__all__'
+    ordering_fields = '__all__'
 
     def perform_create(self, serializer):
         serializer.save(author=self.request.user)
+
+    @action(detail=False, methods=['get'], url_path='recent', pagination_class=None)
+    def recent_articles(self, request):
+        recent = Article.objects.order_by('-date')[:3]
+        serializer = self.get_serializer(recent, many=True)
+        return Response(serializer.data)
 
 
 class PromoteToWriterView(APIView):

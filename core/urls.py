@@ -21,6 +21,7 @@ urlpatterns = [
     path(API_V1_URL+'api-auth/', include('rest_framework.urls')),  # Important for login/logout
     path(API_V1_URL+'articles/', include('apps.v1.article.urls')),
     path(API_V1_URL+'courses/', include('apps.v1.course.urls')),
+    path(API_V1_URL+'', include('apps.v1.main.urls')),
 ]
 
 urlpatterns += static(MEDIA_URL, document_root=MEDIA_ROOT)

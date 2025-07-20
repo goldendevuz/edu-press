@@ -27,7 +27,7 @@ migration:
 migrate:
 	python3 manage.py migrate
 startapp:
-	python manage.py startapp $(name) && mv $(name) apps/$(name)
+	python manage.py startapp $(name) && mv $(name) apps/v1/$(name)
 clear-linux:
 	find . -path "*/migrations/*.py" -not -name "__init__.py" -delete && find . -path "*/migrations/*.pyc"  -delete
 clear-windows:
@@ -44,6 +44,6 @@ re-mig:
 run-wsgi:
 	gunicorn core.wsgi:application --bind 0.0.0.0:1024
 tunnel:
-	jprq http 7 -s platform
+	jprq http 7 -s edu_press_api
 open-bash:
-	docker exec -it drf_api bash
+	docker exec -it edu_press_api bash

@@ -1,7 +1,7 @@
 from rest_framework import serializers
 
 from .models import (
-    ContactUs, CourseCategory, CourseFaq, CourseLecture, CourseReview, CourseSection, Course, Curriculum, Faq, Feedback, InstructorSocial, Instructor, 
+    ContactUs, CourseCategory, CourseFaq, CourseLecture, CourseReview, CourseSection, Course, Curriculum, Feedback, InstructorSocial, Instructor, 
     Lesson, Quiz, Social, StudentLecture, Student
 )
 
@@ -60,17 +60,22 @@ class CourseLectureSerializer(serializers.ModelSerializer):
         ]
         
 class CourseReviewSerializer(serializers.ModelSerializer):
+    student = serializers.UUIDField(read_only=True)
     student_username = serializers.CharField(source='student.user.username', read_only=True)
-    
+    course_name = serializers.CharField(source='course.title', read_only=True)
+    date = serializers.DateField(read_only=True)  # <-- auto-filled
 
     class Meta:
         model = CourseReview
         fields = [
             'id',
             'student',
-            'student_username',  # for display
+            'student_username',
+            'course',
+            'course_name',
             'date',
             'text',
+            'stars',
             'created',
         ]
         
@@ -94,6 +99,7 @@ class CourseSerializer(serializers.ModelSerializer):
     curriculum_name = serializers.CharField(source='curriculum.name', read_only=True, default=None)
     level_display = serializers.CharField(source='get_level_display', read_only=True)
     is_featured = serializers.BooleanField(default=False)  # explicitly tell DRF it's false
+    avg_rating = serializers.FloatField(read_only=True)
 
     class Meta:
         model = Course
@@ -115,6 +121,7 @@ class CourseSerializer(serializers.ModelSerializer):
             'level_display',
             'description',
             'instructor_summary',
+            'avg_rating',
             'created',
         ]
 
@@ -124,13 +131,6 @@ class CurriculumSerializer(serializers.ModelSerializer):
     class Meta:
         model = Curriculum
         fields = ['id', 'description', 'created']
-
-class FaqSerializer(serializers.ModelSerializer):
-    
-
-    class Meta:
-        model = Faq
-        fields = ['id', 'question', 'answer', 'created']
         
 class FeedbackSerializer(serializers.ModelSerializer):
     username = serializers.CharField(source='user.username', read_only=True)

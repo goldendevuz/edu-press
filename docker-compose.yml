@@ -14,7 +14,7 @@ services:
     user: root
 
   nginx:
-    image: nginx:latest
+    image: nginx:stable-alpine
     container_name: edu_nginx
     ports:
       - "80:80"  # no port needed in URL

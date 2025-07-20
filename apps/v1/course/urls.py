@@ -2,16 +2,15 @@ from django.urls import path
 from rest_framework.routers import DefaultRouter
 from .views import (
     ContactUsCreateView, CourseCategoryViewSet, CourseFaqViewSet, CourseLectureViewSet, CourseReviewViewSet, CourseSectionViewSet, CourseViewSet, 
-    CurriculumViewSet, FaqViewSet, FeedbackViewSet, InstructorSocialViewSet, InstructorViewSet, LessonViewSet, QuizViewSet, SocialViewSet, 
+    CurriculumViewSet, FeedbackViewSet, InstructorSocialViewSet, InstructorViewSet, LessonViewSet, QuizViewSet, SocialViewSet, 
     StudentLectureViewSet, StudentViewSet
 )
 
 
 router = DefaultRouter()
-router.register(r'faqs', FaqViewSet, basename='faq')
 router.register(r'categories', CourseCategoryViewSet, basename='course-category')
 router.register(r'curriculums', CurriculumViewSet, basename='curriculum')
-router.register(r'course-faqs', CourseFaqViewSet, basename='course-faq')
+router.register(r'faqs', CourseFaqViewSet, basename='course-faq')
 router.register(r'lectures', CourseLectureViewSet, basename='course-lecture')
 router.register(r'reviews', CourseReviewViewSet, basename='course-review')
 router.register(r'sections', CourseSectionViewSet, basename='course-section')

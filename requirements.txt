@@ -24,3 +24,4 @@ django-schema-viewer
 drf-spectacular[sidecar]
 django-filter
 djangorestframework-jsonapi[django-filter]
+Faker

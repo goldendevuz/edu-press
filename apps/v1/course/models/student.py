@@ -6,7 +6,7 @@ User = get_user_model()
 
 
 class Student(BaseModel):
-    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='students')
+    user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='student')
 
     def __str__(self):
         return f'Student: {self.user.get_full_name() or self.user.username}'

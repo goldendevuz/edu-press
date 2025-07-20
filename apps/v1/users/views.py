@@ -270,6 +270,7 @@ class PasswordGeneratorView(APIView):
 
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
+@extend_schema(tags=['Authentication'])
 def test_login(request):
     user = request.user
     ic(user.auth_status)

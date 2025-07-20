@@ -1,5 +1,8 @@
+import json
 import re
 import threading
+
+import requests
 import phonenumbers
 from django.core.mail import EmailMessage
 from django.template.loader import render_to_string
@@ -77,24 +80,19 @@ def send_email(email, code):
     )
 
 def send_phone_code(phone, code):
-    import requests
-    import json
-
-    url = "http://0.0.0.0:2020/api/sms/"
+    url = config('SMS_API_URL')  # Get the URL from the .env file
+    api_token = config('SMS_API_TOKEN')  # Get the API token from the .env file
 
     payload = json.dumps({
-    "number": phone.replace("+998", ""),
-    "text": f"Salom do'stim! Sizning tasdiqlash kodingiz: {code}\n"
+        "number": phone.replace("+998", ""),
+        "text": f"Salom do'stim! Sizning tasdiqlash kodingiz: {code}\n"
     })
+    
     headers = {
-    'Content-Type': 'application/json',
-    'Authorization': f'Basic {config("BASIC_AUTH_TOKEN")}',
+        'Content-Type': 'application/json',
+        'Authorization': f'Bearer {api_token}',  # Use the Bearer token from .env
     }
 
-    response = requests.request("POST", url, headers=headers, data=payload)
+    response = requests.post(url, headers=headers, data=payload)
 
     return response.json()
-
-
-
-

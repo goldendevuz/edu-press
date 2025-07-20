@@ -1,3 +1,4 @@
+from django.db.models import Avg
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework.filters import SearchFilter, OrderingFilter
 from rest_framework import viewsets
@@ -8,12 +9,12 @@ from rest_framework.permissions import IsAuthenticatedOrReadOnly
 
 from apps.v1.course.permissions import IsAdminOrReadOnly, IsInstructorOrReadOnly
 from .models import (
-    ContactUs, CourseCategory, CourseFaq, CourseLecture, CourseReview, CourseSection, Course, Curriculum, Faq, Feedback, InstructorSocial, Instructor, 
+    ContactUs, CourseCategory, CourseFaq, CourseLecture, CourseReview, CourseSection, Course, Curriculum, Feedback, InstructorSocial, Instructor, 
     Lesson, Quiz, Social, StudentLecture, Student
 )
 from .serializers import (
     ContactUsSerializer, CourseCategorySerializer, CourseFaqSerializer, CourseLectureSerializer, CourseReviewSerializer, CourseSectionSerializer, 
-    CourseSerializer, CurriculumSerializer, FaqSerializer, FeedbackSerializer, InstructorSocialSerializer, InstructorSerializer, LessonSerializer,
+    CourseSerializer, CurriculumSerializer, FeedbackSerializer, InstructorSocialSerializer, InstructorSerializer, LessonSerializer,
     QuizSerializer, SocialSerializer, StudentLectureSerializer, StudentSerializer
 )
 from .filters import CourseCategoryFilter, CourseFilter
@@ -44,18 +45,6 @@ class CourseCategoryViewSet(viewsets.ModelViewSet):
     search_fields = '__all__'
     ordering_fields = '__all__'
 
-
-class CourseFaqViewSet(viewsets.ModelViewSet):
-    queryset = CourseFaq.objects.all()
-    serializer_class = CourseFaqSerializer
-    permission_classes = [IsAuthenticatedOrReadOnly]
-
-    def get_queryset(self):
-        course_id = self.request.query_params.get('course')
-        if course_id:
-            return CourseFaq.objects.filter(course_id=course_id)
-        return super().get_queryset()
-
 class CourseLectureViewSet(viewsets.ModelViewSet):
     queryset = CourseLecture.objects.all()
     serializer_class = CourseLectureSerializer
@@ -74,9 +63,14 @@ class CourseReviewViewSet(viewsets.ModelViewSet):
 
     def get_queryset(self):
         student_id = self.request.query_params.get('student')
+        course_id = self.request.query_params.get('course')
+
+        queryset = super().get_queryset()
         if student_id:
-            return CourseReview.objects.filter(student_id=student_id)
-        return super().get_queryset()
+            queryset = queryset.filter(student_id=student_id)
+        if course_id:
+            queryset = queryset.filter(course_id=course_id)
+        return queryset
     
 class CourseSectionViewSet(viewsets.ModelViewSet):
     queryset = CourseSection.objects.all()
@@ -89,6 +83,22 @@ class CourseSectionViewSet(viewsets.ModelViewSet):
             return CourseSection.objects.filter(course_id=course_id)
         return super().get_queryset()
     
+class CourseReviewViewSet(viewsets.ModelViewSet):
+    queryset = CourseReview.objects.all()
+    serializer_class = CourseReviewSerializer
+    permission_classes = [IsAuthenticatedOrReadOnly]
+
+    def perform_create(self, serializer):
+        student = self.request.user.student
+        course = serializer.validated_data['course']
+
+        # 🚫 Ensure the student is enrolled in the course
+        if not course.students.filter(id=student.id).exists():
+            raise PermissionDenied("You are not enrolled in this course.")
+
+        # ✅ Save review with auto-filled date and student
+        serializer.save(student=student, date=date.today())
+    
 class CourseViewSet(viewsets.ModelViewSet):
     queryset = Course.objects.all()
     serializer_class = CourseSerializer
@@ -99,15 +109,11 @@ class CourseViewSet(viewsets.ModelViewSet):
     filterset_fields = '__all__'
     search_fields = '__all__'
     ordering_fields = '__all__'
+
     
 class CurriculumViewSet(viewsets.ModelViewSet):
     queryset = Curriculum.objects.all()
     serializer_class = CurriculumSerializer
-    permission_classes = [IsAuthenticatedOrReadOnly]
-    
-class FaqViewSet(viewsets.ModelViewSet):
-    queryset = Faq.objects.all()
-    serializer_class = FaqSerializer
     permission_classes = [IsAuthenticatedOrReadOnly]
     
 class FeedbackViewSet(viewsets.ModelViewSet):
@@ -186,3 +192,15 @@ class StudentViewSet(viewsets.ModelViewSet):
 
     def perform_create(self, serializer):
         serializer.save(user=self.request.user)
+
+
+class CourseFaqViewSet(viewsets.ModelViewSet):
+    queryset = CourseFaq.objects.all()
+    serializer_class = CourseFaqSerializer
+    permission_classes = [IsAuthenticatedOrReadOnly]
+
+    def get_queryset(self):
+        course_id = self.request.query_params.get('course')
+        if course_id:
+            return CourseFaq.objects.filter(course_id=course_id)
+        return super().get_queryset()

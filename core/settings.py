@@ -1,6 +1,7 @@
 import os
 from datetime import timedelta
 from pathlib import Path
+from corsheaders.defaults import default_headers
 
 from config import (SECRET_KEY, DEBUG, ADMIN_URL, ALLOWED_HOSTS, CSRF_TRUSTED_ORIGINS, CORS_ALLOWED_ORIGINS,
                       EMAIL_HOST_USER, EMAIL_HOST_PASSWORD, API_V1_URL, ACCESS_TOKEN_LIFETIME, REFRESH_TOKEN_LIFETIME)
@@ -18,6 +19,7 @@ ALLOWED_HOSTS = ALLOWED_HOSTS
 INTERNAL_IPS = ALLOWED_HOSTS
 CSRF_TRUSTED_ORIGINS = CSRF_TRUSTED_ORIGINS
 CORS_ALLOWED_ORIGINS = CORS_ALLOWED_ORIGINS
+CORS_ALLOW_HEADERS = list(default_headers) + ['authorization']
 
 # Application definition
 INSTALLED_APPS = [
@@ -55,6 +57,7 @@ LOCAL_APPS = [
     'apps.v1.shared',
     'apps.v1.course',
     'apps.v1.article',
+    'apps.v1.main',
 ]
 
 INSTALLED_APPS += THIRD_APPS

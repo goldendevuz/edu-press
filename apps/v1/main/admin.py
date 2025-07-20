@@ -6,11 +6,7 @@ from import_export.admin import ImportExportModelAdmin
 
 from apps.v1.shared.admin import BaseAdmin
 from .models import (
-    Course, CourseCategory, CourseSection, CourseLecture, CourseFaq, CourseReview,
-    Curriculum, Lesson, Quiz,
-    Student, StudentLecture,
-    Instructor, InstructorSocial, Social,
-    ContactUs, Feedback
+    Faq
 )
 
 
@@ -84,11 +80,7 @@ def register_model(model):
 
 # ✅ Register all 17 course models
 registered_models = [
-    Course, CourseCategory, CourseSection, CourseLecture, CourseFaq, CourseReview,
-    Curriculum, Lesson, Quiz,
-    Student, StudentLecture,
-    Instructor, InstructorSocial, Social,
-    ContactUs, Feedback
+    Faq
 ]
 
 for model in registered_models:

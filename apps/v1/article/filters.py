@@ -1,7 +1,7 @@
 from django_filters import rest_framework as filters
-from django_filters import CharFilter, ChoiceFilter
+from django_filters import CharFilter
 from django.db import models
-from .models import CourseCategory, Course
+from .models import ArticleCategory, Article
 
 
 # Field types we allow for filtering
@@ -44,33 +44,7 @@ class BaseAutoFilterSet(filters.FilterSet):
         }
 
 
-# Example: CourseCategoryFilter using the Base
-class CourseCategoryFilter(BaseAutoFilterSet):
+class ArticleFilter(BaseAutoFilterSet):
     class Meta(BaseAutoFilterSet.Meta):
-        model = CourseCategory
-        fields = get_filterable_fields(CourseCategory)
-        
-
-
-STAR_CHOICES = [(i, f"{i} stars") for i in range(1, 6)]
-
-class CourseFilter(BaseAutoFilterSet):
-    stars_param = ChoiceFilter(  # ← renamed from "stars"
-        choices=[(i, f'{i} stars') for i in range(1, 6)],
-        method='dummy_filter',
-        label='Average Stars'
-    )
-
-    level = ChoiceFilter(
-        choices=Course.LEVEL_CHOICES,
-        label='Level'
-    )
-
-    def dummy_filter(self, queryset, name, value):
-        return queryset
-
-    class Meta(BaseAutoFilterSet.Meta):
-        model = Course
-        fields = get_filterable_fields(Course)  # from your BaseAutoFilterSet
-
-
+        model = Article
+        fields = get_filterable_fields(Article)
